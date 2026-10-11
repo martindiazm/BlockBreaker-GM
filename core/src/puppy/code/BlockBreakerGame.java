@@ -12,6 +12,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import com.badlogic.gdx.audio.Sound;
+
 
 public class BlockBreakerGame extends ApplicationAdapter {
     private OrthographicCamera camera;
@@ -24,6 +26,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	private int vidas;
 	private int puntaje;
 	private int nivel;
+	private Sound sonidoRomperBloque;
     
 		@Override
 		public void create () {	
@@ -39,7 +42,9 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		    ball = new PingBall(Gdx.graphics.getWidth()/2-10, 41, 10, 5, 7, true);
 		    pad = new Paddle(Gdx.graphics.getWidth()/2-50,40,100,10);
 		    vidas = 3;
-		    puntaje = 0;    
+		    puntaje = 0;
+		    
+		    sonidoRomperBloque = Gdx.audio.newSound(Gdx.files.internal("sounds/block_break.wav"));
 		}
 		public void crearBloques(int filas) {
 			blocks.clear();
@@ -104,6 +109,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	            Block b = blocks.get(i);
 	            if (b.destroyed) {
 	            	puntaje++;
+	            	sonidoRomperBloque.play(0.3f);
 	                blocks.remove(b);
 	                i--; //para no saltarse 1 tras eliminar del arraylist
 	            }
@@ -118,6 +124,15 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		
 		@Override
 		public void dispose () {
+			// Liberar recursos graficos
+		    batch.dispose();
+		    font.dispose();
+		    shape.dispose();
+
+		    // Liberar recurso de audio
+		    if (sonidoRomperBloque != null) {
+		        sonidoRomperBloque.dispose();
+		    }
 
 		}
 	}

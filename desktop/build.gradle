@@ -11,7 +11,7 @@ task run(dependsOn: classes, type: JavaExec) {
     main = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
-    workingDir = project.assetsDir
+    workingDir = rootProject.file('assets')
     ignoreExitValue = true
 
     if (OperatingSystem.current() == OperatingSystem.MAC_OS) {
