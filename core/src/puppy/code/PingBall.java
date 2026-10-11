@@ -6,9 +6,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class PingBall {
-	    private int x;
-	    private int y;
+/** Pelota: colisiones de limites y delegacion de movimiento a Strategy. */
+public class PingBall extends GameObject {
+
 	    private int size;
 	    private int xSpeed;
 	    private int ySpeed;
@@ -16,8 +16,7 @@ public class PingBall {
 	    private boolean estaQuieto;
 	    
 	    public PingBall(int x, int y, int size, int xSpeed, int ySpeed, boolean iniciaQuieto) {
-	        this.x = x;
-	        this.y = y;
+	        super(x,y);
 	        this.size = size;
 	        this.xSpeed = xSpeed;
 	        this.ySpeed = ySpeed;
@@ -31,55 +30,51 @@ public class PingBall {
 	    	estaQuieto=bb;
 	    }
 	    public void setXY(int x, int y) {
-	    	this.x = x;
-	        this.y = y;
+	        setPosition(x, y);
 	    }
-	    public int getY() {return y;}
-	    
-	    public void draw(ShapeRenderer shape){
+
+	    @Override
+	    public void draw(ShapeRenderer shape) {
 	        shape.setColor(color);
-	        shape.circle(x, y, size);
+	        shape.circle(getX(), getY(), size);
 	    }
-	    
+
 	    public void update() {
-	    	if (estaQuieto) return;
-	        x += xSpeed;
-	        y += ySpeed;
-	        if (x-size < 0 || x+size > Gdx.graphics.getWidth()) {
+	        if (estaQuieto) {
+	            return;
+	        }
+
+	        setPosition(
+	            getX() + xSpeed,
+	            getY() + ySpeed
+	        );
+
+	        if (getX() - size < 0 ||
+	            getX() + size > Gdx.graphics.getWidth()) {
 	            xSpeed = -xSpeed;
 	        }
-	        if (y+size > Gdx.graphics.getHeight()) {
+
+	        if (getY() + size > Gdx.graphics.getHeight()) {
 	            ySpeed = -ySpeed;
 	        }
-	    }
+	    }	
 	    
 	    public void checkCollision(Paddle paddle) {
-	        if(collidesWith(paddle)){
+
+	        if (paddle.collidesWith(getX(), getY(), size)) {
 	            color = Color.GREEN;
 	            ySpeed = -ySpeed;
-	        }
-	        else{
+	        } else {
 	            color = Color.WHITE;
 	        }
 	    }
-	    private boolean collidesWith(Paddle pp) {
 
-	    	boolean intersectaX = (pp.getX() + pp.getWidth() >= x-size) && (pp.getX() <= x+size);
-	        boolean intersectaY = (pp.getY() + pp.getHeight() >= y-size) && (pp.getY() <= y+size);		
-	    	return intersectaX && intersectaY;
-	    }
-	    
 	    public void checkCollision(Block block) {
-	        if(collidesWith(block)){
-	            ySpeed = - ySpeed;
+
+	        if (block.collidesWith(getX(), getY(), size)) {
+	            ySpeed = -ySpeed;
 	            block.destroyed = true;
 	        }
-	    }
-	    private boolean collidesWith(Block bb) {
-
-	    	boolean intersectaX = (bb.x + bb.width >= x-size) && (bb.x <= x+size);
-	        boolean intersectaY = (bb.y + bb.height >= y-size) && (bb.y <= y+size);		
-	    	return intersectaX && intersectaY;
 	    }
 	    
 	}

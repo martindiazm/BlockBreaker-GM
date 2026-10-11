@@ -6,7 +6,7 @@ import java.util.Random;
 
 import com.badlogic.gdx.graphics.Color;
 
-public class Block {
+public class Block implements Collidable{
     int x,y,width,height;
     Color cc;
     boolean destroyed;
@@ -25,5 +25,23 @@ public class Block {
     public void draw(ShapeRenderer shape){
     	shape.setColor(cc);
         shape.rect(x, y, width, height);
+    }
+    
+    @Override
+    public boolean collidesWith(int ballX, int ballY, int radius) {
+
+        if (destroyed) {
+            return false;
+        }
+
+        boolean intersectaX =
+            x + width >= ballX - radius &&
+            x <= ballX + radius;
+
+        boolean intersectaY =
+            y + height >= ballY - radius &&
+            y <= ballY + radius;
+
+        return intersectaX && intersectaY;
     }
 }
