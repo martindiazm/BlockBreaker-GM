@@ -7,9 +7,12 @@ import java.util.Random;
 import com.badlogic.gdx.graphics.Color;
 
 public class Block implements Collidable{
-    int x,y,width,height;
-    Color cc;
-    boolean destroyed;
+	private int x;
+	private int y;
+	private int width;
+	private int height;
+	private Color cc;
+	private boolean destroyed;
     
     public Block(int x, int y, int width, int height) {
         this.x = x;
@@ -22,6 +25,32 @@ public class Block implements Collidable{
         cc = new Color(0.1f+r.nextFloat(), r.nextFloat(), r.nextFloat(), 1f);
   
     }
+    
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+    
+    public void destroy() {
+        destroyed = true;
+    }
+    
+    
     public void draw(ShapeRenderer shape){
     	shape.setColor(cc);
         shape.rect(x, y, width, height);

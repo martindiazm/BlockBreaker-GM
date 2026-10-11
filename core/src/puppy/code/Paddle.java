@@ -18,24 +18,26 @@ public class Paddle extends GameObject implements Collidable{
 	public int getWidth() {return width;}
 	public int getHeight() {return height;}
 
-	@Override
-	public void draw(ShapeRenderer shape) {
-	    shape.setColor(Color.BLUE);
-
-	    int x2 = getX();
+	public void update() {
+	    int nuevaX = getX();
 
 	    if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-	        x2 = getX() - 15;
+	        nuevaX -= 15;
 	    }
 
 	    if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-	        x2 = getX() + 15;
+	        nuevaX += 15;
 	    }
 
-	    if (x2 > 0 && x2 + width < Gdx.graphics.getWidth()) {
-	        setPosition(x2, getY());
+	    if (nuevaX > 0 &&
+	        nuevaX + width < Gdx.graphics.getWidth()) {
+	        setPosition(nuevaX, getY());
 	    }
-
+	}
+	
+	@Override
+	public void draw(ShapeRenderer shape) {
+	    shape.setColor(Color.BLUE);
 	    shape.rect(getX(), getY(), width, height);
 	}
     

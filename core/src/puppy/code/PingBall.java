@@ -33,6 +33,7 @@ public class PingBall extends GameObject {
 	        setPosition(x, y);
 	    }
 
+	    
 	    @Override
 	    public void draw(ShapeRenderer shape) {
 	        shape.setColor(color);
@@ -59,11 +60,15 @@ public class PingBall extends GameObject {
 	        }
 	    }	
 	    
+	    private void rebotarVerticalmente() {
+	        ySpeed = -ySpeed;
+	    }
+	    
 	    public void checkCollision(Paddle paddle) {
 
 	        if (paddle.collidesWith(getX(), getY(), size)) {
 	            color = Color.GREEN;
-	            ySpeed = -ySpeed;
+	            rebotarVerticalmente();
 	        } else {
 	            color = Color.WHITE;
 	        }
@@ -72,8 +77,8 @@ public class PingBall extends GameObject {
 	    public void checkCollision(Block block) {
 
 	        if (block.collidesWith(getX(), getY(), size)) {
-	            ySpeed = -ySpeed;
-	            block.destroyed = true;
+	        	rebotarVerticalmente();
+	            block.destroy();
 	        }
 	    }
 	    

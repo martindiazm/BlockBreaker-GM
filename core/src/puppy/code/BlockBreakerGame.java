@@ -73,8 +73,9 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		@Override
 		public void render () {
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); 		
-	        shape.begin(ShapeRenderer.ShapeType.Filled);
-	        pad.draw(shape);
+			shape.begin(ShapeRenderer.ShapeType.Filled);
+			pad.update();
+			pad.draw(shape);
 	        // monitorear inicio del juego
 	        if (ball.estaQuieto()) {
 	        	ball.setXY(pad.getX()+pad.getWidth()/2-5, pad.getY()+pad.getHeight()+11);
@@ -107,7 +108,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	        // actualizar estado de los bloques 
 	        for (int i = 0; i < blocks.size(); i++) {
 	            Block b = blocks.get(i);
-	            if (b.destroyed) {
+	            if (b.isDestroyed()) {
 	            	puntaje++;
 	            	sonidoRomperBloque.play(0.3f);
 	                blocks.remove(b);
