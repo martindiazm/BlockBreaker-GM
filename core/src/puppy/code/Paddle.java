@@ -17,6 +17,11 @@ public class Paddle extends GameObject implements Collidable{
      
 	public int getWidth() {return width;}
 	public int getHeight() {return height;}
+	
+	public void centrar() {
+	    int centroX = (Gdx.graphics.getWidth() - width) / 2;
+	    setPosition(centroX, getY());
+	}
 
 	public void update() {
 	    int nuevaX = getX();
@@ -29,10 +34,17 @@ public class Paddle extends GameObject implements Collidable{
 	        nuevaX += 15;
 	    }
 
-	    if (nuevaX > 0 &&
-	        nuevaX + width < Gdx.graphics.getWidth()) {
-	        setPosition(nuevaX, getY());
+	    // Impedir que la plataforma salga por la izquierda
+	    if (nuevaX < 0) {
+	        nuevaX = 0;
 	    }
+
+	    // Impedir que salga por la derecha
+	    if (nuevaX + width > Gdx.graphics.getWidth()) {
+	        nuevaX = Gdx.graphics.getWidth() - width;
+	    }
+	    
+	    setPosition(nuevaX, getY());
 	}
 	
 	@Override

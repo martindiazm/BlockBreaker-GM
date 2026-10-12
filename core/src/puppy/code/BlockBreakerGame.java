@@ -26,6 +26,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	private ArrayList<Block> blocks = new ArrayList<>();
 	private GameManager gameManager;
 	private Sound sonidoRomperBloque;
+	private boolean movimientoZigZag = false;
     
 		@Override
 		public void create () {	
@@ -41,6 +42,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 			
 		    shape = new ShapeRenderer();
 		    ball = new PingBall(Gdx.graphics.getWidth()/2-10, 41, 10, 5, 7, true);
+		    aplicarEstrategiaActual();
 		    pad = new Paddle(Gdx.graphics.getWidth()/2-50,40,100,10);
 
 		    
@@ -100,9 +102,22 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	        	gameManager.perderVida();
 	        	//nivel = 1;
 	        	ball = new PingBall(pad.getX()+pad.getWidth()/2-5, pad.getY()+pad.getHeight()+11, 10, 5, 7, true);
+	        	aplicarEstrategiaActual();
 	        }
 	        
-	     // Dibujar bloques y comprobar colisiones
+	        // Cambiar estrategia presionando M
+	        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+
+	            movimientoZigZag = !movimientoZigZag;
+
+	            if (movimientoZigZag) {
+	                ball.setMovementStrategy(new ZigZagMovement());
+	            } else {
+	                ball.setMovementStrategy(new NormalMovement());
+	            }
+	        }
+	        
+	        // Dibujar bloques y comprobar colisiones
 	        if (!gameManager.isGameOver()) {
 	            for (Block b : blocks) {
 	                b.draw(shape);
@@ -140,6 +155,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	                    pad.getY() + pad.getHeight() + 11,
 	                    10, 5, 7, true
 	                );
+	                aplicarEstrategiaActual();
 	            }
 
 	            ball.draw(shape);
@@ -198,16 +214,33 @@ public class BlockBreakerGame extends ApplicationAdapter {
 
 		    // Reiniciar datos mediante Singleton
 		    gameManager.reiniciarPartida();
+		    
+		    // Volver al movimiento normal
+		    movimientoZigZag = false;
 
+		    // Centrar la plataforma
+		    pad.centrar();
+		    
 		    // Volver a crear los bloques del primer nivel
 		    crearBloques(2 + gameManager.getNivel());
-
+		    
 		    // Reiniciar la pelota
 		    ball = new PingBall(
 		        pad.getX() + pad.getWidth() / 2 - 5,
 		        pad.getY() + pad.getHeight() + 11,
 		        10, 5, 7, true
 		    );
+		    
+		    aplicarEstrategiaActual();
+		}
+		
+		private void aplicarEstrategiaActual() {
+
+		    if (movimientoZigZag) {
+		        ball.setMovementStrategy(new ZigZagMovement());
+		    } else {
+		        ball.setMovementStrategy(new NormalMovement());
+		    }
 		}
 	        
 		@Override

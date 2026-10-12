@@ -14,6 +14,7 @@ public class PingBall extends GameObject {
 	    private int ySpeed;
 	    private Color color = Color.WHITE;
 	    private boolean estaQuieto;
+	    private MovementStrategy movementStrategy;
 	    
 	    public PingBall(int x, int y, int size, int xSpeed, int ySpeed, boolean iniciaQuieto) {
 	        super(x,y);
@@ -21,6 +22,7 @@ public class PingBall extends GameObject {
 	        this.xSpeed = xSpeed;
 	        this.ySpeed = ySpeed;
 	        estaQuieto = iniciaQuieto;
+	        this.movementStrategy = new NormalMovement();
 	    }
 	    
 	    public boolean estaQuieto() {
@@ -41,24 +43,37 @@ public class PingBall extends GameObject {
 	    }
 
 	    public void update() {
+
 	        if (estaQuieto) {
 	            return;
 	        }
 
-	        setPosition(
-	            getX() + xSpeed,
-	            getY() + ySpeed
-	        );
+	        // Delegar movimiento a la estrategia actual
+	        movementStrategy.move(this);
 
-	        if (getX() - size < 0 ||
-	            getX() + size > Gdx.graphics.getWidth()) {
-	            xSpeed = -xSpeed;
+	     // Rebote contra el borde izquierdo
+	        if (getX() - size < 0) {
+	            setPosition(size, getY());
+	            xSpeed = Math.abs(xSpeed);
 	        }
 
-	        if (getY() + size > Gdx.graphics.getHeight()) {
-	            ySpeed = -ySpeed;
+	        // Rebote contra el borde derecho
+	        if (getX() + size > Gdx.graphics.getWidth()) {
+	            setPosition(Gdx.graphics.getWidth() - size, getY());
+	            xSpeed = -Math.abs(xSpeed);
 	        }
-	    }	
+	        
+
+	        // Rebote contra el techo
+	        if (getY() + size >= Gdx.graphics.getHeight()) {
+
+	            // Colocar la pelota dentro del limite superior
+	            setPosition(getX(), Gdx.graphics.getHeight() - size);
+
+	            // Asegurar que la pelota se mueva hacia abajo
+	            ySpeed = -Math.abs(ySpeed);
+	        }
+	    }
 	    
 	    private void rebotarVerticalmente() {
 	        ySpeed = -ySpeed;
@@ -66,9 +81,21 @@ public class PingBall extends GameObject {
 	    
 	    public void checkCollision(Paddle paddle) {
 
-	        if (paddle.collidesWith(getX(), getY(), size)) {
+	        // Solo comprobar el rebote si la pelota esta bajando
+	        if (ySpeed < 0 &&
+	            paddle.collidesWith(getX(), getY(), size)) {
+
+	            // Colocar la pelota justo encima de la plataforma
+	            setPosition(
+	                getX(),
+	                paddle.getY() + paddle.getHeight() + size
+	            );
+
+	            // Cambiar direccion hacia arriba
+	            ySpeed = Math.abs(ySpeed);
+
 	            color = Color.GREEN;
-	            rebotarVerticalmente();
+
 	        } else {
 	            color = Color.WHITE;
 	        }
@@ -76,9 +103,35 @@ public class PingBall extends GameObject {
 
 	    public void checkCollision(Block block) {
 
+	        if (block.isDestroyed()) {
+	            return;
+	        }
+
 	        if (block.collidesWith(getX(), getY(), size)) {
-	        	rebotarVerticalmente();
+
+	            // Destruir el bloque
 	            block.destroy();
+
+	            // Cambiar la direccion vertical
+	            rebotarVerticalmente();
+	        }
+	    }
+	    
+	    public int getXSpeed() {
+	        return xSpeed;
+	    }
+
+	    public int getYSpeed() {
+	        return ySpeed;
+	    }
+
+	    public void moveBy(int dx, int dy) {
+	        setPosition(getX() + dx, getY() + dy);
+	    }
+
+	    public void setMovementStrategy(MovementStrategy strategy) {
+	        if (strategy != null) {
+	            this.movementStrategy = strategy;
 	        }
 	    }
 	    
