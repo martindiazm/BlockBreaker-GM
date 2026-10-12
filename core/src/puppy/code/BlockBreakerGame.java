@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
 
 public class BlockBreakerGame extends ApplicationAdapter {
@@ -23,9 +24,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	private PingBall ball;
 	private Paddle pad;
 	private ArrayList<Block> blocks = new ArrayList<>();
-	private int vidas;
-	private int puntaje;
-	private int nivel;
+	private GameManager gameManager;
 	private Sound sonidoRomperBloque;
     
 		@Override
@@ -35,14 +34,15 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		    batch = new SpriteBatch();
 		    font = new BitmapFont();
 		    font.getData().setScale(3, 2);
-		    nivel = 1;
-		    crearBloques(2+nivel);
+		    gameManager = GameManager.getInstance();
+		    gameManager.reiniciarPartida();
+
+		    crearBloques(2 + gameManager.getNivel());
 			
 		    shape = new ShapeRenderer();
 		    ball = new PingBall(Gdx.graphics.getWidth()/2-10, 41, 10, 5, 7, true);
 		    pad = new Paddle(Gdx.graphics.getWidth()/2-50,40,100,10);
-		    vidas = 3;
-		    puntaje = 0;
+
 		    
 		    sonidoRomperBloque = Gdx.audio.newSound(Gdx.files.internal("sounds/block_break.wav"));
 		}
@@ -65,14 +65,28 @@ public class BlockBreakerGame extends ApplicationAdapter {
 			batch.setProjectionMatrix(camera.combined);
 			batch.begin();
 			//dibujar textos
-			font.draw(batch, "Puntos: " + puntaje, 10, 25);
-			font.draw(batch, "Vidas : " + vidas, Gdx.graphics.getWidth()-20, 25);
+			font.draw(batch, "Puntos: " + gameManager.getPuntaje(), 10, 25);
+			font.draw(batch, "Vidas : " + gameManager.getVidas(), Gdx.graphics.getWidth()- 20, 25);
+			font.draw(batch, "Nivel: " + gameManager.getNivel(), 350, 25);
 			batch.end();
 		}	
 		
 		@Override
 		public void render () {
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT); 		
+			
+			// Mostrar Game Over cuando no quedan vidas
+		    if (gameManager.isGameOver()) {
+
+		        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+		            reiniciarJuego();
+		        } else {
+		            dibujarGameOver();
+		        }
+
+		        return;
+		    }
+		    
 			shape.begin(ShapeRenderer.ShapeType.Filled);
 			pad.update();
 			pad.draw(shape);
@@ -83,46 +97,119 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	        }else ball.update();
 	        //verificar si se fue la bola x abajo
 	        if (ball.getY()<0) {
-	        	vidas--;
+	        	gameManager.perderVida();
 	        	//nivel = 1;
 	        	ball = new PingBall(pad.getX()+pad.getWidth()/2-5, pad.getY()+pad.getHeight()+11, 10, 5, 7, true);
 	        }
-	        // verificar game over
-	        if (vidas<=0) {
-	        	vidas = 3;
-	        	nivel = 1;
-	        	crearBloques(2+nivel);
-	        	//ball = new PingBall(pad.getX()+pad.getWidth()/2-5, pad.getY()+pad.getHeight()+11, 10, 5, 7, true);	        	
-	        }
-	        // verificar si el nivel se terminó
-	        if (blocks.size()==0) {
-	        	nivel++;
-	        	crearBloques(2+nivel);
-	        	ball = new PingBall(pad.getX()+pad.getWidth()/2-5, pad.getY()+pad.getHeight()+11, 10, 5, 7, true);
-	        }    	
-	        //dibujar bloques
-	        for (Block b : blocks) {        	
-	            b.draw(shape);
-	            ball.checkCollision(b);
-	        }
-	        // actualizar estado de los bloques 
-	        for (int i = 0; i < blocks.size(); i++) {
-	            Block b = blocks.get(i);
-	            if (b.isDestroyed()) {
-	            	puntaje++;
-	            	sonidoRomperBloque.play(0.3f);
-	                blocks.remove(b);
-	                i--; //para no saltarse 1 tras eliminar del arraylist
+	        
+	     // Dibujar bloques y comprobar colisiones
+	        if (!gameManager.isGameOver()) {
+	            for (Block b : blocks) {
+	                b.draw(shape);
+	                ball.checkCollision(b);
 	            }
+
+	            // Eliminar bloques destruidos
+	            for (int i = 0; i < blocks.size(); i++) {
+
+	                Block b = blocks.get(i);
+
+	                if (b.isDestroyed()) {
+
+	                    gameManager.sumarPuntos(1);
+
+	                    sonidoRomperBloque.play(0.5f);
+
+	                    blocks.remove(i);
+	                    i--;
+	                }
+	            }
+
+	            // Comprobar colision con plataforma
+	            ball.checkCollision(pad);
+
+	            // Comprobar si se completo el nivel
+	            if (blocks.isEmpty()) {
+
+	                gameManager.siguienteNivel();
+
+	                crearBloques(2 + gameManager.getNivel());
+
+	                ball = new PingBall(
+	                    pad.getX() + pad.getWidth() / 2 - 5,
+	                    pad.getY() + pad.getHeight() + 11,
+	                    10, 5, 7, true
+	                );
+	            }
+
+	            ball.draw(shape);
 	        }
-	        
-	        ball.checkCollision(pad);
-	        ball.draw(shape);
-	        
+
 	        shape.end();
-	        dibujaTextos();
+
+	        // Dibujar informacion de la partida
+	        if (gameManager.isGameOver()) {
+	            dibujarGameOver();
+	        } else {
+	            dibujaTextos();
+	        }
+		}
+	    
+		private void dibujarGameOver() {
+
+		    camera.update();
+		    batch.setProjectionMatrix(camera.combined);
+
+		    GlyphLayout layout = new GlyphLayout();
+
+		    float anchoPantalla = camera.viewportWidth;
+		    float altoPantalla = camera.viewportHeight;
+
+		    batch.begin();
+
+		    // Titulo GAME OVER
+		    String titulo = "GAME OVER";
+		    layout.setText(font, titulo);
+
+		    font.draw(batch, titulo,
+		        (anchoPantalla - layout.width) / 2,
+		        altoPantalla / 2 + 80);
+
+		    // Puntaje final
+		    String textoPuntaje = "Puntaje: " + gameManager.getPuntaje();
+		    layout.setText(font, textoPuntaje);
+
+		    font.draw(batch, textoPuntaje,
+		        (anchoPantalla - layout.width) / 2,
+		        altoPantalla / 2 + 20);
+
+		    // Instruccion para reiniciar
+		    String instruccion = "Presiona R para reiniciar";
+		    layout.setText(font, instruccion);
+
+		    font.draw(batch, instruccion,
+		        (anchoPantalla - layout.width) / 2,
+		        altoPantalla / 2 - 40);
+
+		    batch.end();
 		}
 		
+		private void reiniciarJuego() {
+
+		    // Reiniciar datos mediante Singleton
+		    gameManager.reiniciarPartida();
+
+		    // Volver a crear los bloques del primer nivel
+		    crearBloques(2 + gameManager.getNivel());
+
+		    // Reiniciar la pelota
+		    ball = new PingBall(
+		        pad.getX() + pad.getWidth() / 2 - 5,
+		        pad.getY() + pad.getHeight() + 11,
+		        10, 5, 7, true
+		    );
+		}
+	        
 		@Override
 		public void dispose () {
 			// Liberar recursos graficos
