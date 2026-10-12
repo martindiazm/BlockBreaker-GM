@@ -27,6 +27,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	private GameManager gameManager;
 	private Sound sonidoRomperBloque;
 	private boolean movimientoZigZag = false;
+	private Sound sonidoLevelUp;
     
 		@Override
 		public void create () {	
@@ -44,9 +45,10 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		    ball = new PingBall(Gdx.graphics.getWidth()/2-10, 41, 10, 5, 7, true);
 		    aplicarEstrategiaActual();
 		    pad = new Paddle(Gdx.graphics.getWidth()/2-50,40,100,10);
-
 		    
 		    sonidoRomperBloque = Gdx.audio.newSound(Gdx.files.internal("sounds/block_break.wav"));
+		    sonidoLevelUp = Gdx.audio.newSound(Gdx.files.internal("sounds/level_up.wav"));
+		    
 		}
 		public void crearBloques(int filas) {
 			blocks.clear();
@@ -147,6 +149,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	            if (blocks.isEmpty()) {
 
 	                gameManager.siguienteNivel();
+	                sonidoLevelUp.play(0.5f);
 
 	                crearBloques(2 + gameManager.getNivel());
 
@@ -253,6 +256,9 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		    // Liberar recurso de audio
 		    if (sonidoRomperBloque != null) {
 		        sonidoRomperBloque.dispose();
+		    }
+		    if (sonidoLevelUp != null) {
+		        sonidoLevelUp.dispose();
 		    }
 
 		}
