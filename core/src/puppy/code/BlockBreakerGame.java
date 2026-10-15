@@ -28,6 +28,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	private Sound sonidoRomperBloque;
 	private boolean movimientoZigZag = false;
 	private Sound sonidoLevelUp;
+	private GameLevel nivelActual;
     
 		@Override
 		public void create () {	
@@ -50,18 +51,22 @@ public class BlockBreakerGame extends ApplicationAdapter {
 		    sonidoLevelUp = Gdx.audio.newSound(Gdx.files.internal("sounds/level_up.wav"));
 		    
 		}
+		
 		public void crearBloques(int filas) {
-			blocks.clear();
-			int blockWidth = 70;
-		    int blockHeight = 26;
-		    int y = Gdx.graphics.getHeight();
-		    for (int cont = 0; cont<filas; cont++ ) {
-		    	y -= blockHeight+10;
-		    	for (int x = 5; x < Gdx.graphics.getWidth(); x += blockWidth + 10) {
-		            blocks.add(new Block(x, y, blockWidth, blockHeight));
-		        }
+
+		    int numeroNivel = gameManager.getNivel();
+
+		    // Selecciona el tipo de nivel
+		    if (numeroNivel % 2 == 0) {
+		        nivelActual = new ChallengeLevel();
+		    } else {
+		        nivelActual = new ClassicLevel();
 		    }
+
+		  
+		    nivelActual.prepararNivel(blocks, numeroNivel, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		}
+		
 		public void dibujaTextos() {
 			//actualizar matrices de la cámara
 			camera.update();
@@ -146,7 +151,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	            ball.checkCollision(pad);
 
 	            // Comprobar si se completo el nivel
-	            if (blocks.isEmpty()) {
+	            if (nivelActual.estaCompletado(blocks)) {
 
 	                gameManager.siguienteNivel();
 	                sonidoLevelUp.play(0.5f);
