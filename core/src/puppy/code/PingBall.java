@@ -16,8 +16,13 @@ public class PingBall extends GameObject {
 	    private boolean estaQuieto;
 	    private MovementStrategy movementStrategy;
 	    
+	    private int anteriorX;
+	    private int anteriorY;
+	    
 	    public PingBall(int x, int y, int size, int xSpeed, int ySpeed, boolean iniciaQuieto) {
 	        super(x,y);
+	        anteriorX = x;
+	        anteriorY = y;
 	        this.size = size;
 	        this.xSpeed = xSpeed;
 	        this.ySpeed = ySpeed;
@@ -48,6 +53,9 @@ public class PingBall extends GameObject {
 	            return;
 	        }
 
+	        anteriorX = getX();
+	        anteriorY = getY();
+	        
 	        // Delegar movimiento a la estrategia actual
 	        movementStrategy.move(this);
 
@@ -101,20 +109,84 @@ public class PingBall extends GameObject {
 	        }
 	    }
 
-	    public void checkCollision(Block block) {
+	    public boolean checkCollision(Block block) {
 
 	        if (block.isDestroyed()) {
-	            return;
+	            return false;
 	        }
 
-	        if (block.collidesWith(getX(), getY(), size)) {
+	        // Limites del bloque
+	        int izquierda = block.getX();
+	        int derecha = izquierda + block.getWidth();
+	        int abajo = block.getY();
+	        int arriba = abajo + block.getHeight();
 
-	            // Destruir el bloque
-	            block.destroy();
+	        // Punto del bloque mas cercano al centro de la pelota
+	        int cercanoX = Math.max(
+	            izquierda, Math.min(getX(), derecha)
+	        );
 
-	            // Cambiar la direccion vertical
-	            rebotarVerticalmente();
+	        int cercanoY = Math.max(
+	            abajo, Math.min(getY(), arriba)
+	        );
+
+	        int diferenciaX = getX() - cercanoX;
+	        int diferenciaY = getY() - cercanoY;
+
+	        // Detectar contacto entre circulo y rectangulo
+	        boolean colision =
+	            diferenciaX * diferenciaX +
+	            diferenciaY * diferenciaY <= size * size;
+
+	        if (!colision) {
+	            return false;
 	        }
+
+	        // Registrar el impacto
+	        if (!block.recibirGolpe()) {
+	            return false;
+	        }
+
+	        // Calcular desde que direccion venia la pelota
+	        if (anteriorY - size >= arriba) {
+
+	            // Impacto desde arriba
+	            setPosition(getX(), arriba + size);
+	            ySpeed = Math.abs(ySpeed);
+
+	        } else if (anteriorY + size <= abajo) {
+
+	            // Impacto desde abajo
+	            setPosition(getX(), abajo - size);
+	            ySpeed = -Math.abs(ySpeed);
+
+	        } else if (anteriorX + size <= izquierda) {
+
+	            // Impacto desde la izquierda
+	            setPosition(izquierda - size, getY());
+	            xSpeed = -Math.abs(xSpeed);
+
+	        } else if (anteriorX - size >= derecha) {
+
+	            // Impacto desde la derecha
+	            setPosition(derecha + size, getY());
+	            xSpeed = Math.abs(xSpeed);
+
+	        } else {
+
+	            // Contacto en esquina o superposicion
+	            // Resolver segun la menor penetracion
+	            int penetracionX = size - Math.abs(diferenciaX);
+	            int penetracionY = size - Math.abs(diferenciaY);
+
+	            if (penetracionX < penetracionY) {
+	                xSpeed = -xSpeed;
+	            } else {
+	                rebotarVerticalmente();
+	            }
+	        }
+
+	        return true;
 	    }
 	    
 	    public int getXSpeed() {

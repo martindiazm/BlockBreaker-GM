@@ -13,16 +13,22 @@ public class Block implements Collidable{
 	private int height;
 	private Color cc;
 	private boolean destroyed;
+	private int resistencia;
+
     
-    public Block(int x, int y, int width, int height) {
+	public Block(int x, int y, int width, int height) {
+	    this(x, y, width, height, 1);
+	}
+	
+    public Block(int x, int y, int width, int height, int resistencia) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        destroyed = false;
-        Random r = new Random(x+y);
         
+        Random r = new Random(x+y);        
         cc = new Color(0.1f+r.nextFloat(), r.nextFloat(), r.nextFloat(), 1f);
+        this.resistencia = Math.max(1, resistencia);
   
     }
     
@@ -41,6 +47,10 @@ public class Block implements Collidable{
     public int getHeight() {
         return height;
     }
+    
+    public int getResistencia() {
+        return resistencia;
+    }
 
     public boolean isDestroyed() {
         return destroyed;
@@ -50,6 +60,9 @@ public class Block implements Collidable{
         destroyed = true;
     }
     
+    public int getPuntos() {
+        return 1;
+    }
     
     public void draw(ShapeRenderer shape){
     	shape.setColor(cc);
@@ -72,5 +85,20 @@ public class Block implements Collidable{
             y <= ballY + radius;
 
         return intersectaX && intersectaY;
+    }
+    
+    public boolean recibirGolpe() {
+
+        if (destroyed) {
+            return false;
+        }
+
+        resistencia--;
+
+        if (resistencia <= 0) {
+            destroy();
+        }
+
+        return true;
     }
 }

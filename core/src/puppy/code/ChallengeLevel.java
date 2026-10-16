@@ -4,36 +4,24 @@ import java.util.ArrayList;
 
 public class ChallengeLevel extends GameLevel {
 
-    @Override
-    protected void generarBloques(ArrayList<Block> blocks, int nivel, int anchoPantalla, int altoPantalla) 
-    {
+	@Override
+	protected void generarBloques(
+	        ArrayList<Block> blocks,
+	        int nivel,
+	        int anchoPantalla,
+	        int altoPantalla) {
 
-        int filas = 2 + nivel;
+	    LevelBuilder builder = new LevelBuilder(anchoPantalla, altoPantalla);
 
-        int blockWidth = 70;
-        int blockHeight = 26;
-        int separacion = 10;
+	    ArrayList<Block> nuevosBloques = builder
+	        .filas(2 + nivel)
+	        .tamanoBloques(70, 26)
+	        .separacion(10)
+	        .alternados(false)
+	        .resistentes(true)
+	        .especiales(true)
+	        .build();
 
-        int y = altoPantalla;
-
-        for (int fila = 0; fila < filas; fila++) {
-
-            y -= blockHeight + separacion;
-
-            int columna = 0;
-
-            for (int x = 5;
-                 x + blockWidth <= anchoPantalla;
-                 x += blockWidth + separacion) {
-
-                // Distribucion alternada con espacios
-                if ((fila + columna) % 3 != 0) {
-
-                    blocks.add(new Block(x, y, blockWidth, blockHeight));
-                }
-
-                columna++;
-            }
-        }
-    }
+	    blocks.addAll(nuevosBloques);
+	}
 }

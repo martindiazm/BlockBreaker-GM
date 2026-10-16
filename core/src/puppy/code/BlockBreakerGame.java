@@ -126,6 +126,7 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	        
 	        // Dibujar bloques y comprobar colisiones
 	        if (!gameManager.isGameOver()) {
+	        	
 	            for (Block b : blocks) {
 	                b.draw(shape);
 	                ball.checkCollision(b);
@@ -138,7 +139,8 @@ public class BlockBreakerGame extends ApplicationAdapter {
 
 	                if (b.isDestroyed()) {
 
-	                    gameManager.sumarPuntos(1);
+	                    // Cada tipo de bloque entrega sus propios puntos
+	                    gameManager.sumarPuntos(b.getPuntos());
 
 	                    sonidoRomperBloque.play(0.5f);
 
@@ -151,8 +153,8 @@ public class BlockBreakerGame extends ApplicationAdapter {
 	            ball.checkCollision(pad);
 
 	            // Comprobar si se completo el nivel
-	            if (nivelActual.estaCompletado(blocks)) {
-
+	            if (nivelActual.estaCompletado(blocks))	 
+	            {
 	                gameManager.siguienteNivel();
 	                sonidoLevelUp.play(0.5f);
 

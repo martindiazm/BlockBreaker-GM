@@ -4,31 +4,25 @@ import java.util.ArrayList;
 
 public class ClassicLevel extends GameLevel {
 
-    @Override
-    protected void generarBloques(
-            ArrayList<Block> blocks,
-            int nivel,
-            int anchoPantalla,
-            int altoPantalla) {
+	@Override
+	protected void generarBloques(
+	        ArrayList<Block> blocks,
+	        int nivel,
+	        int anchoPantalla,
+	        int altoPantalla) {
 
-        int filas = 2 + nivel;
+	    LevelBuilder builder = new LevelBuilder(
+	        anchoPantalla, altoPantalla
+	    );
 
-        int blockWidth = 70;
-        int blockHeight = 26;
-        int separacion = 10;
+	    ArrayList<Block> nuevosBloques = builder
+	        .filas(2 + nivel)
+	        .tamanoBloques(70, 26)
+	        .separacion(10)
+	        .alternados(false)
+	        .especiales(false)
+	        .build();
 
-        int y = altoPantalla;
-
-        for (int fila = 0; fila < filas; fila++) {
-
-            y -= blockHeight + separacion;
-
-            for (int x = 5;
-                 x + blockWidth <= anchoPantalla;
-                 x += blockWidth + separacion) {
-
-                blocks.add(new Block(x, y, blockWidth, blockHeight));
-            }
-        }
-    }
+	    blocks.addAll(nuevosBloques);
+	}
 }
